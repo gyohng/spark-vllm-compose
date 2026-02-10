@@ -92,9 +92,10 @@ services:
       
       # ==============================================================================
       # PREFIX CACHING (3-5x cache hit improvement)
+      # Note: Disabled for Mamba models (Qwen3) - incompatible with async scheduling
       # ==============================================================================
-      - VLLM_PREFIX_CACHING=1
-      - VLLM_PREFIX_CACHING_HASH_ALGORITHM=fingerprint
+      # - VLLM_PREFIX_CACHING=1
+      # - VLLM_PREFIX_CACHING_HASH_ALGORITHM=fingerprint
       
       # ==============================================================================
       # EAGLE SPECULATIVE DECODING (2-3x throughput)

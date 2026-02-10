@@ -58,7 +58,7 @@ docker compose run --rm -e VLLM_USE_FLASHINFER_MOE_FP8=0 --service-ports \
     --port 8000 \
     --max-model-len 2048 \
     --gpu-memory-utilization 0.95 \
-    --enable-prefix-caching \
+    # --enable-prefix-caching (disabled for Mamba models) \
     --enable-chunked-prefill \
     --async-scheduling \
     $EXTRA_ARGS
