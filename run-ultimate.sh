@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Export current user's UID/GID for container permissions
-export UID=$(id -u)
-export GID=$(id -g)
+export HOST_UID=$(id -u)
+export HOST_GID=$(id -g)
 
 # ULTIMATE Performance Mode - Maximum throughput for GB10/Blackwell
 # Usage: ./run-ultimate.sh [model_name]
@@ -34,14 +34,8 @@ fi
 
 # ULTIMATE compilation config for Blackwell
 COMPILATION_CONFIG='{
-    "pass_config": {
-        "enable_fi_allreduce_fusion": true,
-        "enable_attn_fusion": true,
-        "enable_noop": true
-    },
     "custom_ops": ["+quant_fp8", "+rms_norm"],
     "cudagraph_mode": "FULL_DECODE_ONLY",
-    "splitting_ops": [],
     "compile_sizes": [1, 2, 4, 8, 16, 32, 64, 128]
 }'
 

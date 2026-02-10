@@ -1,8 +1,8 @@
 #!/bin/bash
 # Comprehensive SOTA Benchmark for GB10/Blackwell
 # Export current user's UID/GID for container permissions
-export UID=$(id -u)
-export GID=$(id -g)
+export HOST_UID=$(id -u)
+export HOST_GID=$(id -g)
 
 
 set -e

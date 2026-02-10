@@ -6,8 +6,8 @@
 set -e
 
 # Export current user's UID/GID for container permissions
-export UID=$(id -u)
-export GID=$(id -g)
+export HOST_UID=$(id -u)
+export HOST_GID=$(id -g)
 
 # Default model
 MODEL="${1:-Qwen/Qwen3-Coder-Next-FP8}"

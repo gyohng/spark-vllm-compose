@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Export current user's UID/GID for container permissions
-export UID=$(id -u)
-export GID=$(id -g)
+export HOST_UID=$(id -u)
+export HOST_GID=$(id -g)
 
 # NVFP4 Mode - Native Blackwell 4-bit Quantization
 # Usage: ./run-nvfp4.sh [model_name]
