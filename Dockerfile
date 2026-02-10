@@ -5,7 +5,7 @@
 # ==============================================================================
 # STAGE 1: Builder - CUDA 13.1.1 (Latest)
 # ==============================================================================
-FROM nvidia/cuda:13.1.1-devel-ubuntu24.04 AS builder
+FROM nvidia/cuda:13.1.1-devel-ubuntu24.04
 
 # Prevent interactive prompts during apt
 ENV DEBIAN_FRONTEND=noninteractive
@@ -114,29 +114,7 @@ RUN python -c "import vllm; print(f'vLLM version: {vllm.__version__}')" && \
     python -c "import torch; print(f'PyTorch: {torch.__version__}, CUDA: {torch.version.cuda}')" && \
     python -c "from vllm.model_executor.layers.quantization import QUANTIZATION_METHODS; print(f'Quantizations: {QUANTIZATION_METHODS}')"
 
-# ==============================================================================
-# STAGE 2: Runtime - CUDA 13.1.1 (Latest)
-# ==============================================================================
-FROM nvidia/cuda:13.1.1-runtime-ubuntu24.04 AS runtime
-
-# Prevent interactive prompts
-ENV DEBIAN_FRONTEND=noninteractive
-ENV PYTHONUNBUFFERED=1
-
-# Install only runtime dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.12 \
-    python3.12-venv \
-    libgomp1 \
-    curl \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy the virtual environment from builder
-COPY --from=builder /opt/vllm-venv /opt/vllm-venv
-
 # Set environment
-ENV VIRTUAL_ENV=/opt/vllm-venv
 ENV PATH="/opt/vllm-venv/bin:${PATH}"
 ENV PYTHONPATH="/opt/vllm-venv/lib/python3.12/site-packages:${PYTHONPATH}"
 ENV CUDA_HOME=/usr/local/cuda

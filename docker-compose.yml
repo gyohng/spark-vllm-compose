@@ -3,7 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: runtime
       args:
         - CUDA_ARCHS=12.0;12.1
     image: spark-vllm:latest
