@@ -118,7 +118,6 @@ services:
       # ==============================================================================
       - HF_HOME=/state/huggingface
       - HUGGINGFACE_HUB_CACHE=/state/huggingface/hub
-      - TRANSFORMERS_CACHE=/state/transformers
       - TORCH_HOME=/state/torch
       - XDG_CACHE_HOME=/state/cache
       - VLLM_HOME=/state/vllm

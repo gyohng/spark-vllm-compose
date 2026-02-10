@@ -108,6 +108,8 @@ RUN uv pip install -v . \
 # Patch memory check to work with unified memory (disable strict free memory check)
 RUN sed -i 's/if init_snapshot.free_memory < requested_memory:/if False and init_snapshot.free_memory < requested_memory:/' /opt/vllm-venv/lib/python3.12/site-packages/vllm/v1/worker/utils.py
 
+#RUN uv pip install -U --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu130
+
 # Verify the installation and show enabled features
 RUN python -c "import vllm; print(f'vLLM version: {vllm.__version__}')" && \
     python -c "from vllm.vllm_flash_attn import flash_attn_varlen_func; print('Flash attention: OK')" && \
@@ -122,7 +124,6 @@ ENV CUDA_HOME=/usr/local/cuda
 # vLLM environment configuration
 ENV VLLM_HOME=/state/vllm
 ENV HF_HOME=/state/huggingface
-ENV TRANSFORMERS_CACHE=/state/transformers
 ENV TORCH_HOME=/state/torch
 ENV XDG_CACHE_HOME=/state/cache
 

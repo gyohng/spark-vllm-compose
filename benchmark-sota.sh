@@ -72,7 +72,7 @@ docker compose run --rm -e VLLM_USE_FLASHINFER_MOE_FP8=0 vllm bench throughput \
     --output-len 128 \
     --num-prompts 100 \
     --dtype bfloat16 \
-    --gpu-memory-utilization 0.4
+    --gpu-memory-utilization 0.95
 
 echo ""
 echo "3. Latency Benchmark (Single Request)..."
@@ -83,7 +83,7 @@ docker compose run --rm -e VLLM_USE_FLASHINFER_MOE_FP8=0 vllm bench latency \
     --output-len 128 \
     --batch-size 1 \
     --dtype bfloat16 \
-    --gpu-memory-utilization 0.4
+    --gpu-memory-utilization 0.95
 
 echo ""
 echo "========================================="
