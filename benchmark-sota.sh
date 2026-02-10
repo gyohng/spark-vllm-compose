@@ -68,7 +68,7 @@ echo "2. Throughput Benchmark (Standard)..."
 docker compose run --rm -e VLLM_USE_FLASHINFER_MOE_FP8=0 vllm bench throughput \
     --model "$MODEL" \
     --max-model-len 1024 \
-    --input-len 512 \
+    --input-len 256 \
     --output-len 128 \
     --num-prompts 100 \
     --dtype bfloat16 \
@@ -79,7 +79,7 @@ echo "3. Latency Benchmark (Single Request)..."
 docker compose run --rm -e VLLM_USE_FLASHINFER_MOE_FP8=0 vllm bench latency \
     --model "$MODEL" \
     --max-model-len 1024 \
-    --input-len 512 \
+    --input-len 256 \
     --output-len 128 \
     --batch-size 1 \
     --dtype bfloat16 \
