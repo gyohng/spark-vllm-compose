@@ -16,6 +16,10 @@ services:
     # NVIDIA runtime - requires: sudo nvidia-ctk runtime configure --runtime=docker
     runtime: nvidia
     
+    # Run as host user (fixes permission issues with mounted volumes)
+    # Uses current user's UID:GID from environment
+    user: "${UID:-1000}:${GID:-1000}"
+    
     # Additional permissions for GPU access
     cap_add:
       - SYS_ADMIN

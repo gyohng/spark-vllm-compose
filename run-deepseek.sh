@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Export current user's UID/GID for container permissions
+export UID=$(id -u)
+export GID=$(id -g)
+
 # DeepSeek-V3/R1 Optimized Mode with MLA
 # Usage: ./run-deepseek.sh [deepseek_model]
 

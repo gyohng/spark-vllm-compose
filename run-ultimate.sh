@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Export current user's UID/GID for container permissions
+export UID=$(id -u)
+export GID=$(id -g)
+
 # ULTIMATE Performance Mode - Maximum throughput for GB10/Blackwell
 # Usage: ./run-ultimate.sh [model_name]
 

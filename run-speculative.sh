@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Export current user's UID/GID for container permissions
+export UID=$(id -u)
+export GID=$(id -g)
+
 # EAGLE-3 Speculative Decoding Mode
 # Usage: ./run-speculative.sh [model_name] [speculator_model]
 
