@@ -1,0 +1,187 @@
+services:
+  vllm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+      args:
+        - CUDA_ARCHS=12.0;12.1
+    image: spark-vllm:latest
+    container_name: spark-vllm
+    
+    # GPU configuration - access all GPUs without memory restrictions
+    # Using CDI (Container Device Interface) for modern GPU support
+    devices:
+      - nvidia.com/gpu=all
+    
+    # NVIDIA runtime - requires: sudo nvidia-ctk runtime configure --runtime=docker
+    runtime: nvidia
+    
+    # Additional permissions for GPU access
+    cap_add:
+      - SYS_ADMIN
+    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    
+    volumes:
+      - ./models:/models:rw
+      - ./state:/state:rw
+      - ./config:/config:ro
+      # torch.compile cache persistence
+      - ./state/torch_compile_cache:/root/.cache/vllm/torch_compile_cache:rw
+    
+    environment:
+      # ==============================================================================
+      # GPU SETTINGS
+      # ==============================================================================
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - CUDA_VISIBLE_DEVICES=0
+      
+      # ==============================================================================
+      # V1 ARCHITECTURE (2025 - Complete Rewrite)
+      # ==============================================================================
+      - VLLM_USE_V1=1
+      
+      # ==============================================================================
+      # ASYNC SCHEDULING (Eliminates GPU idle time)
+      # ==============================================================================
+      - VLLM_ENABLE_ASYNC_SCHEDULING=1
+      
+      # ==============================================================================
+      # TORCH.COMPILE OPTIMIZATIONS (Fusion Passes)
+      # ==============================================================================
+      - VLLM_TORCH_COMPILE=1
+      - VLLM_TORCH_COMPILE_MAX_BS=1024
+      
+      # ==============================================================================
+      # GB10/BLACKWELL QUANTIZATION (SOTA)
+      # ==============================================================================
+      - VLLM_ENABLE_NVFP4=1
+      - VLLM_FP8_ENABLED=1
+      - VLLM_CUTLASS_ENABLED=1
+      
+      # ==============================================================================
+      # ATTENTION BACKEND (FlashInfer for Blackwell)
+      # ==============================================================================
+      - VLLM_ATTENTION_BACKEND=FLASHINFER
+      - VLLM_FLASHINFER_DISABLE_Q_QUANTIZATION=0
+      
+      # ==============================================================================
+      # FLASHINFER OPTIMIZATIONS
+      # ==============================================================================
+      - VLLM_USE_FLASHINFER_SAMPLER=1
+      # Note: Disable FP8 MoE for models that don't support it
+      # - VLLM_USE_FLASHINFER_MOE_FP8=1
+      - VLLM_USE_FLASHINFER_MOE_FP16=1
+      - VLLM_USE_FLASHINFER_MOE_MXFP4_BF16=1
+      - VLLM_BLOCKSCALE_FP8_GEMM_FLASHINFER=1
+      
+      # ==============================================================================
+      # PREFIX CACHING (3-5x cache hit improvement)
+      # ==============================================================================
+      - VLLM_PREFIX_CACHING=1
+      - VLLM_PREFIX_CACHING_HASH_ALGORITHM=fingerprint
+      
+      # ==============================================================================
+      # EAGLE SPECULATIVE DECODING (2-3x throughput)
+      # ==============================================================================
+      - VLLM_ENABLE_EAGLE_SPECULATIVE=1
+      
+      # ==============================================================================
+      # MULTI-PROCESS SETTINGS
+      # ==============================================================================
+      - VLLM_WORKER_MULTIPROC_METHOD=spawn
+      - VLLM_CUSTOM_ALL_REDUCE=1
+      
+      # ==============================================================================
+      # MEMORY & PERFORMANCE
+      # ==============================================================================
+      - VLLM_MEMORY_FRACTION=0.95
+      - VLLM_GPU_MEMORY_UTILIZATION=0.95
+      
+      # ==============================================================================
+      # CACHE LOCATIONS
+      # ==============================================================================
+      - HF_HOME=/state/huggingface
+      - HUGGINGFACE_HUB_CACHE=/state/huggingface/hub
+      - TRANSFORMERS_CACHE=/state/transformers
+      - TORCH_HOME=/state/torch
+      - XDG_CACHE_HOME=/state/cache
+      - VLLM_HOME=/state/vllm
+      
+      # ==============================================================================
+      # LOGGING
+      # ==============================================================================
+      - VLLM_LOGGING_LEVEL=INFO
+      - PYTHONUNBUFFERED=1
+      
+    working_dir: /models
+    
+    # Default command - optimized for throughput
+    command: >
+      serve Qwen/Qwen3-Coder-Next-FP8
+      --host 0.0.0.0
+      --port 8000
+      --max-model-len 32768
+      --gpu-memory-utilization 0.95
+      --enable-prefix-caching
+      --enable-chunked-prefill
+      --async-scheduling
+    
+    restart: unless-stopped
+    
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      stack:
+        soft: 67108864
+        hard: 67108864
+    
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+    
+    ipc: host
+    network_mode: bridge
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+    
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+
+  # Optional: Disaggregated Prefill/Decode (PD) service
+  # Uncomment for extremely high throughput scenarios
+  # vllm-prefill:
+  #   extends: vllm
+  #   container_name: spark-vllm-prefill
+  #   environment:
+  #     - VLLM_ENABLE_V1_CPU_OFFLOADING=1
+  #   command: >
+  #     serve Qwen/Qwen2.5-1.5B-Instruct
+  #     --host 0.0.0.0
+  #     --port 8001
+  #     --max-model-len 2048
+  #     --disaggregated-prefill
