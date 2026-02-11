@@ -48,6 +48,6 @@ docker compose run --rm --service-ports \
     --port 8000 \
     --max-model-len 2048 \
     --gpu-memory-utilization 0.90 \
-    # --enable-prefix-caching (disabled for Mamba models) \
+    --enable-prefix-caching \
     --async-scheduling \
     --speculative-config "$SPEC_CONFIG"

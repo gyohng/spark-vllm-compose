@@ -61,6 +61,7 @@ docker compose run --rm --service-ports \
     --kv-cache-dtype fp8 \
     --dtype float16 \
     --gpu-memory-utilization 0.95 \
-    # --enable-prefix-caching (disabled for Mamba models) \
+     \
+    --enable-prefix-caching \
     --enable-chunked-prefill \
     --async-scheduling

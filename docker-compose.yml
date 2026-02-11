@@ -92,7 +92,7 @@ services:
       
       # ==============================================================================
       # PREFIX CACHING (3-5x cache hit improvement)
-      # Note: Disabled for Mamba models (Qwen3) - incompatible with async scheduling
+      # Note: For Qwen3/Mamba models, use with VLLM_ENABLE_ASYNC_SCHEDULING=0
       # ==============================================================================
       # - VLLM_PREFIX_CACHING=1
       # - VLLM_PREFIX_CACHING_HASH_ALGORITHM=fingerprint
