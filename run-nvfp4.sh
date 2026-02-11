@@ -58,15 +58,8 @@ else
     MODEL_PATH="$MODEL"
 fi
 
-# Check if model supports NVFP4 (basic check)
-echo "Checking NVFP4 availability..."
-docker compose run --rm vllm python -c "
-from vllm.model_executor.layers.quantization import QUANTIZATION_METHODS
-if 'nvfp4' in QUANTIZATION_METHODS or 'mxfp4' in QUANTIZATION_METHODS:
-    print('✓ NVFP4/MXFP4 quantization available')
-else:
-    print('⚠ NVFP4 not available, falling back to FP8')
-" || true
+# Note: NVFP4/MXFP4 support is enabled via VLLM_ENABLE_NVFP4=1
+# The model config will be auto-detected from config.json
 
 echo ""
 echo "Starting with NVFP4 (or best available)..."
@@ -79,7 +72,6 @@ docker compose run --rm --service-ports \
     --host 0.0.0.0 \
     --port 8000 \
     --max-model-len $MAX_MODEL_LEN \
-    --quantization mxfp4 \
     --kv-cache-dtype fp8 \
     --dtype float16 \
     --gpu-memory-utilization 0.95 \
