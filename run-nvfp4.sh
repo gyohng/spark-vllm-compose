@@ -78,6 +78,7 @@ docker compose run --rm --service-ports \
     -e VLLM_ENABLE_NVFP4=1 \
     -e VLLM_USE_FLASHINFER_MOE_MXFP4_BF16=1 \
     -e VLLM_TORCH_COMPILE=0 \
+    -e VLLM_USE_V1=1 \
     vllm serve "$MODEL_PATH" \
     --host 0.0.0.0 \
     --port 8000 \
@@ -85,4 +86,5 @@ docker compose run --rm --service-ports \
     --kv-cache-dtype fp8 \
     --dtype float16 \
     --gpu-memory-utilization 0.95 \
+    --enforce-eager \
     $SCHEDULING_FLAGS
