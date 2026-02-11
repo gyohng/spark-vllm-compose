@@ -44,9 +44,13 @@ echo "  - Native 4-bit floating point (SM120)"
 echo "  - Block scaling: 32 elements per E8M0 scale"
 echo "  - ~4.25 bits per value effective"
 echo ""
-echo "⚠️  Requires:"
-echo "  - Blackwell GPU (GB10, B100, B200)"
-echo "  - Model with NVFP4 weights or quantization support"
+echo "✓ Enabled:"
+echo "  - NVFP4 weights (compressed-tensors)"
+echo "  - Prefix caching"
+echo "  - Chunked prefill"
+echo ""
+echo "✗ Disabled (NVFP4 compatibility):"
+echo "  - torch.compile (dtype mismatch issue)"
 echo ""
 
 mkdir -p models state
@@ -63,11 +67,17 @@ fi
 
 echo ""
 echo "Starting with NVFP4 (or best available)..."
+echo ""
+echo "⚠️  NVFP4 currently disables torch.compile due to dtype compatibility"
+echo "   This is a known issue with torch.compile + NVFP4 on Blackwell"
+echo ""
 
 # Try NVFP4 first, fallbacks are handled by vLLM
+# Note: torch.compile disabled for NVFP4 due to dtype mismatch (float vs c10::Half)
 docker compose run --rm --service-ports \
     -e VLLM_ENABLE_NVFP4=1 \
     -e VLLM_USE_FLASHINFER_MOE_MXFP4_BF16=1 \
+    -e VLLM_TORCH_COMPILE=0 \
     vllm serve "$MODEL_PATH" \
     --host 0.0.0.0 \
     --port 8000 \
