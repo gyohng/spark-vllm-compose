@@ -12,6 +12,9 @@ set -e
 MODEL="${1:-Qwen/Qwen3-Coder-Next-FP8}"
 SPECULATOR="${2:-}"  # Optional speculator model
 
+# Context length: Maximum 128K (tons of memory on GB10!)
+MAX_MODEL_LEN="${MAX_MODEL_LEN:-131072}"
+
 # Detect model architecture for compatibility
 IS_MAMBA=false
 if [[ "$MODEL" =~ (qwen3|Qwen3|mamba|Mamba) ]]; then
@@ -33,6 +36,7 @@ echo "========================================="
 echo "EAGLE-3 Speculative Decoding Mode"
 echo "========================================="
 echo "Target Model: $MODEL"
+echo "Max Context: ${MAX_MODEL_LEN} tokens"
 echo "Architecture: $MODEL_TYPE"
 [ -n "$SPECULATOR" ] && echo "Speculator: $SPECULATOR"
 echo ""
@@ -64,7 +68,7 @@ docker compose run --rm --service-ports \
     vllm serve "$MODEL_PATH" \
     --host 0.0.0.0 \
     --port 8000 \
-    --max-model-len 2048 \
+    --max-model-len $MAX_MODEL_LEN \
     --gpu-memory-utilization 0.90 \
     $SCHEDULING_FLAGS \
     --speculative-config "$SPEC_CONFIG"

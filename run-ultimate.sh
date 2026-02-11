@@ -11,6 +11,10 @@ set -e
 
 MODEL="${1:-Qwen/Qwen3-Coder-Next-FP8}"
 
+# Context length: Maximum 128K for Qwen3-Coder-Next (tons of memory on GB10!)
+# Override if you need more concurrent requests: MAX_MODEL_LEN=32768 ./run-ultimate.sh
+MAX_MODEL_LEN="${MAX_MODEL_LEN:-131072}"
+
 # Detect model architecture for compatibility
 IS_MAMBA=false
 if [[ "$MODEL" =~ (qwen3|Qwen3|mamba|Mamba) ]]; then
@@ -34,6 +38,7 @@ echo "========================================="
 echo "ULTIMATE Performance Mode"
 echo "========================================="
 echo "Model: $MODEL"
+echo "Max Context: ${MAX_MODEL_LEN} tokens"
 echo "Architecture: $MODEL_TYPE"
 echo ""
 echo "This mode enables ALL SOTA optimizations:"
@@ -67,7 +72,7 @@ docker compose run --rm -e VLLM_USE_FLASHINFER_MOE_FP8=0 --service-ports \
     vllm serve "$MODEL_PATH" \
     --host 0.0.0.0 \
     --port 8000 \
-    --max-model-len 4096 \
+    --max-model-len $MAX_MODEL_LEN \
     --max-num-batched-tokens 16384 \
     --max-num-seqs 256 \
     --gpu-memory-utilization 0.95 \

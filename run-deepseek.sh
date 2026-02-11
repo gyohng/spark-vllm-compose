@@ -33,7 +33,7 @@ docker compose run --rm --service-ports \
     vllm serve "$MODEL" \
     --host 0.0.0.0 \
     --port 8000 \
-    --max-model-len 32768 \
+    --max-model-len 131072 \
     --max-num-batched-tokens 8192 \
     --tensor-parallel-size 1 \
     --pipeline-parallel-size 1 \

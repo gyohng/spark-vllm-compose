@@ -11,6 +11,9 @@ set -e
 
 MODEL="${1:-GadflyII/Qwen3-Coder-Next-NVFP4}"
 
+# Context length: Maximum 128K for NVFP4 (tons of memory on GB10!)
+MAX_MODEL_LEN="${MAX_MODEL_LEN:-131072}"
+
 # Detect model architecture for compatibility
 IS_MAMBA=false
 if [[ "$MODEL" =~ (qwen3|Qwen3|mamba|Mamba) ]]; then
@@ -32,6 +35,7 @@ echo "========================================="
 echo "NVFP4 Mode - Blackwell Native 4-bit"
 echo "========================================="
 echo "Model: $MODEL"
+echo "Max Context: ${MAX_MODEL_LEN} tokens"
 echo "Architecture: $MODEL_TYPE"
 echo ""
 echo "NVFP4 provides:"
@@ -74,7 +78,7 @@ docker compose run --rm --service-ports \
     vllm serve "$MODEL_PATH" \
     --host 0.0.0.0 \
     --port 8000 \
-    --max-model-len 8192 \
+    --max-model-len $MAX_MODEL_LEN \
     --quantization mxfp4 \
     --kv-cache-dtype fp8 \
     --dtype float16 \
