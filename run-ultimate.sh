@@ -85,7 +85,6 @@ docker compose run --rm -e VLLM_USE_FLASHINFER_MOE_FP8=0 --service-ports \
     --max-num-batched-tokens 16384 \
     --max-num-seqs $MAX_SEQS \
     --gpu-memory-utilization $GPU_MEM_UTIL \
-    --num-scheduler-steps 1 \
     $SCHEDULING_FLAGS \
     --compilation-config "$COMPILATION_CONFIG" \
     --quantization fp8 \
