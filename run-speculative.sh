@@ -12,10 +12,28 @@ set -e
 MODEL="${1:-Qwen/Qwen3-Coder-Next-FP8}"
 SPECULATOR="${2:-}"  # Optional speculator model
 
+# Detect model architecture for compatibility
+IS_MAMBA=false
+if [[ "$MODEL" =~ (qwen3|Qwen3|mamba|Mamba) ]]; then
+    IS_MAMBA=true
+fi
+
+# Build optimal flags based on model type
+if [ "$IS_MAMBA" = true ]; then
+    # Mamba: Async scheduling conflicts
+    SCHEDULING_FLAGS="--enable-prefix-caching"
+    MODEL_TYPE="Mamba (Qwen3)"
+else
+    # Transformer: Both work
+    SCHEDULING_FLAGS="--enable-prefix-caching --async-scheduling"
+    MODEL_TYPE="Transformer"
+fi
+
 echo "========================================="
 echo "EAGLE-3 Speculative Decoding Mode"
 echo "========================================="
 echo "Target Model: $MODEL"
+echo "Architecture: $MODEL_TYPE"
 [ -n "$SPECULATOR" ] && echo "Speculator: $SPECULATOR"
 echo ""
 echo "EAGLE-3 can provide 2-3x throughput improvement"
@@ -37,7 +55,7 @@ if [ -n "$SPECULATOR" ]; then
     echo "Using EAGLE-3 with speculator model..."
 else
     # Use n-gram speculative decoding as fallback
-    SPEC_CONFIG="{\"method\": \"ngram\", \"num_speculative_tokens\": 3}"
+    SPEC_CONFIG="{\"method\": \"ngram\", \"num_speculative_tokens\": 5}"
     echo "Using N-Gram speculative decoding..."
 fi
 
@@ -48,6 +66,5 @@ docker compose run --rm --service-ports \
     --port 8000 \
     --max-model-len 2048 \
     --gpu-memory-utilization 0.90 \
-    --enable-prefix-caching \
-    --async-scheduling \
+    $SCHEDULING_FLAGS \
     --speculative-config "$SPEC_CONFIG"

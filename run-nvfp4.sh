@@ -11,10 +11,28 @@ set -e
 
 MODEL="${1:-GadflyII/Qwen3-Coder-Next-NVFP4}"
 
+# Detect model architecture for compatibility
+IS_MAMBA=false
+if [[ "$MODEL" =~ (qwen3|Qwen3|mamba|Mamba) ]]; then
+    IS_MAMBA=true
+fi
+
+# Build optimal flags based on model type
+if [ "$IS_MAMBA" = true ]; then
+    # Mamba: Prefix caching >> Async scheduling
+    SCHEDULING_FLAGS="--enable-prefix-caching --enable-chunked-prefill"
+    MODEL_TYPE="Mamba (Qwen3)"
+else
+    # Transformer: Both work
+    SCHEDULING_FLAGS="--enable-prefix-caching --enable-chunked-prefill --async-scheduling"
+    MODEL_TYPE="Transformer"
+fi
+
 echo "========================================="
 echo "NVFP4 Mode - Blackwell Native 4-bit"
 echo "========================================="
 echo "Model: $MODEL"
+echo "Architecture: $MODEL_TYPE"
 echo ""
 echo "NVFP4 provides:"
 echo "  - ~5x throughput vs FP8 on Blackwell"
@@ -61,7 +79,4 @@ docker compose run --rm --service-ports \
     --kv-cache-dtype fp8 \
     --dtype float16 \
     --gpu-memory-utilization 0.95 \
-     \
-    --enable-prefix-caching \
-    --enable-chunked-prefill \
-    --async-scheduling
+    $SCHEDULING_FLAGS
